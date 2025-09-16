@@ -1,17 +1,20 @@
 <template>
-    <div v-if="show" class="fixed inset-0 z-50 flex items-end">
+    <div v-if="show" class="fixed inset-0 z-50 flex flex-col" style="flex-direction: column;">
         <div class="bg-black bg-opacity-50 absolute inset-0" @click="close"></div>
-        <div class="bg-white rounded-t-lg w-full h-4/5 flex flex-col">
-            <!-- 头部 -->
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">历史记录</h2>
-                <button @click="close" class="p-2 hover:bg-gray-100 rounded">
-                    ✕
-                </button>
-            </div>
 
-            <!-- 内容区域 -->
-            <div class="flex-1 overflow-y-auto p-4">
+        <!-- 导航栏 -->
+        <div class="relative flex items-center justify-center p-4 bg-gray-50 border-b border-gray-200 z-10">
+            <h2 class="text-xl font-bold text-gray-900">历史记录</h2>
+            <button @click="close"
+                class="absolute right-4 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm"
+                style="margin-left: auto;">
+                关闭
+            </button>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="bg-white rounded-b-lg flex-1 overflow-hidden z-10">
+            <div class="h-full overflow-y-auto p-4">
                 <!-- 加载状态 -->
                 <div v-if="loading" class="flex items-center justify-center h-32">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -86,10 +89,11 @@
         <!-- 完整规则查看弹窗 -->
         <div v-if="showRulesModal" class="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-50">
             <div class="bg-white rounded-lg w-11/12 h-4/5 flex flex-col">
-                <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">完整规则</h3>
-                    <button @click="showRulesModal = false" class="p-2 hover:bg-gray-100 rounded">
-                        ✕
+                <div class="relative flex items-center justify-center p-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-xl font-bold text-gray-900">完整规则</h3>
+                    <button @click="showRulesModal = false"
+                        class="absolute right-4 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm">
+                        关闭
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-4">

@@ -154,7 +154,7 @@
     </div>
 
     <!-- 历史记录弹窗 -->
-    <HistoryModal v-model:show="showHistoryModal" @close="showHistoryModal = false" />
+    <HistoryModal v-model:show="showHistoryModal" @close="showHistoryModal = false" @restore="handleRestoreRecord" />
   </div>
 </template>
 
@@ -392,6 +392,49 @@ const saveHistory = async (config, rules) => {
   } catch (error) {
     console.error('保存历史记录失败:', error)
   }
+}
+
+// 处理历史记录恢复
+const handleRestoreRecord = (record) => {
+  // 恢复配置选项卡
+  restoreConfigFromRecord(record.config)
+
+  // 恢复生成的规则到右侧显示区域
+  generatedRules.value = record.rules
+
+}
+
+// 根据历史记录恢复配置选项卡
+const restoreConfigFromRecord = (config) => {
+  // 重置所有选项卡的选中状态
+  tabs.forEach(tab => {
+    tab.tags.forEach(tag => {
+      tag.selected = false
+    })
+  })
+
+  // 根据历史记录配置恢复选中状态
+  config.forEach(configSection => {
+    const tab = tabs.find(t => t.title === configSection.title)
+    if (tab) {
+      configSection.selectedTags.forEach(tagName => {
+        // 首先尝试在现有标签中找到匹配的
+        let tag = tab.tags.find(t => t.name === tagName)
+
+        // 如果在现有标签中找不到，则添加为自定义标签
+        if (!tag) {
+          tag = {
+            id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: tagName,
+            selected: true
+          }
+          tab.tags.push(tag)
+        } else {
+          tag.selected = true
+        }
+      })
+    }
+  })
 }
 
 // 组件挂载时检查认证状态

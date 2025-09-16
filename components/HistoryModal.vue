@@ -59,9 +59,9 @@
 
                             <!-- 操作按钮 -->
                             <div class="flex gap-2">
-                                <button @click="viewFullRules(record)"
+                                <button @click="restoreRecord(record)"
                                     class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    查看完整规则
+                                    回溯完整规则
                                 </button>
                                 <button @click="copyRules(record.rules)"
                                     class="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
@@ -119,7 +119,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'restore'])
 
 const loading = ref(false)
 const historyList = ref([])
@@ -163,9 +163,11 @@ const deleteRecord = async (recordId) => {
     }
 }
 
-const viewFullRules = (record) => {
-    selectedRules.value = record.rules
-    showRulesModal.value = true
+const restoreRecord = (record) => {
+    // 发出恢复事件，传递记录数据
+    emit('restore', record)
+    // 关闭历史记录弹窗
+    close()
 }
 
 const copyRules = async (rules) => {

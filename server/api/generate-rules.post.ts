@@ -1,6 +1,6 @@
 import { createDeepSeek } from '@ai-sdk/deepseek'
 import { generateText } from 'ai'
-import { deepseekText } from '../../tools/getDeepseekOutput'
+import { deepseekText } from '../../utils/getDeepseekOutput'
 
 export default async (requestData: any) => {
   try {

@@ -14,10 +14,10 @@
         <div class="bg-white rounded-lg p-4 w-64">
             <h3 class="text-lg font-semibold mb-4">用户菜单</h3>
             <div class="space-y-2">
-                <button @click="handleProfileAction({ name: '历史记录' })"
-                    class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded">
+                <NuxtLink to="/history" @click="handleHistoryClick"
+                    class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded block">
                     📚 历史记录
-                </button>
+                </NuxtLink>
                 <button @click="handleProfileAction({ name: '登出' })"
                     class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-red-600">
                     🚪 登出
@@ -32,6 +32,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
     user: {
@@ -40,29 +43,21 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['logout', 'showHistory'])
+const emit = defineEmits(['logout'])
 
 const showProfileMenu = ref(false)
 
-const profileActions = computed(() => [
-    {
-        name: '历史记录',
-        icon: 'clock-o',
-        color: '#1989fa'
-    },
-    {
-        name: '登出',
-        icon: 'logout',
-        color: '#ee0a24'
-    }
-])
+const handleHistoryClick = (e) => {
+    showProfileMenu.value = false
+    console.log('链接被点击')
+    e.preventDefault()
+    window.location.href = '/history'
+}
 
 const handleProfileAction = (action) => {
     showProfileMenu.value = false
 
-    if (action.name === '历史记录') {
-        emit('showHistory')
-    } else if (action.name === '登出') {
+    if (action.name === '登出') {
         emit('logout')
     }
 }

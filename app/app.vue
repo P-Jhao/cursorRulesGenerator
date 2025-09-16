@@ -8,7 +8,7 @@
         <div v-if="user" class="flex items-center space-x-2">
           <UserProfile :user="user" @logout="handleLogout" @showHistory="showHistoryModal = true" />
         </div>
-        <button v-else @click="showAuthModal = true"
+        <button v-else @click="handleLoginClick"
           class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">
           登录
         </button>
@@ -107,7 +107,51 @@
     </div>
 
     <!-- 认证弹窗 -->
-    <AuthModal v-model:show="showAuthModal" @close="showAuthModal = false" @success="handleAuthSuccess" />
+    <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg p-6 w-90 max-w-md mx-4">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">{{ isLogin ? '登录' : '注册' }}</h2>
+          <p class="text-gray-600 mt-2">{{ isLogin ? '欢迎回来' : '创建新账户' }}</p>
+        </div>
+
+        <form @submit.prevent="handleAuthSubmit" class="space-y-4">
+          <div v-if="!isLogin">
+            <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+            <input v-model="authForm.username" type="text" required placeholder="请输入用户名"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+            <input v-model="authForm.email" type="email" required placeholder="请输入邮箱"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+            <input v-model="authForm.password" type="password" required minlength="6" placeholder="请输入密码"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="mt-6 space-y-3">
+            <button type="submit" :disabled="authLoading"
+              class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50">
+              {{ authLoading ? '处理中...' : (isLogin ? '登录' : '注册') }}
+            </button>
+
+            <button type="button" @click="toggleAuthMode"
+              class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50">
+              {{ isLogin ? '没有账户？点击注册' : '已有账户？点击登录' }}
+            </button>
+
+            <button type="button" @click="showAuthModal = false"
+              class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50">
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- 历史记录弹窗 -->
     <HistoryModal v-model:show="showHistoryModal" @close="showHistoryModal = false" />
@@ -117,6 +161,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import generateRulesPost from "../server/api/generate-rules.post.ts"
+import UserProfile from "../components/UserProfile.vue"
+import HistoryModal from "../components/HistoryModal.vue"
 
 const generatedRules = ref('')
 const isGenerating = ref(false)
@@ -124,6 +170,13 @@ const newTabTitle = ref('')
 const user = ref(null)
 const showAuthModal = ref(false)
 const showHistoryModal = ref(false)
+const isLogin = ref(true)
+const authLoading = ref(false)
+const authForm = reactive({
+  username: '',
+  email: '',
+  password: ''
+})
 
 // 初始选项卡数据
 const tabs = reactive([
@@ -245,6 +298,61 @@ const copyToClipboard = async () => {
 }
 
 // 认证相关方法
+const handleLoginClick = () => {
+  console.log('登录按钮被点击了')
+  showAuthModal.value = true
+  console.log('showAuthModal 设置为:', showAuthModal.value)
+}
+
+const toggleAuthMode = () => {
+  isLogin.value = !isLogin.value
+  // 清空表单
+  authForm.username = ''
+  authForm.email = ''
+  authForm.password = ''
+}
+
+const handleAuthSubmit = async () => {
+  authLoading.value = true
+
+  try {
+    const url = isLogin.value ? '/api/auth/login' : '/api/auth/register'
+    const body = isLogin.value
+      ? { email: authForm.email, password: authForm.password }
+      : { username: authForm.username, email: authForm.email, password: authForm.password }
+
+    const response = await $fetch(url, {
+      method: 'POST',
+      body
+    })
+
+    if (response.success) {
+      // 保存 token 到 cookie
+      const token = response.data.token
+      document.cookie = `auth-token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`
+
+      // 更新用户状态
+      user.value = response.data.user
+
+      // 关闭弹窗
+      showAuthModal.value = false
+
+      // 清空表单
+      authForm.username = ''
+      authForm.email = ''
+      authForm.password = ''
+
+      // 显示成功消息
+      alert(response.message)
+    }
+  } catch (error) {
+    console.error('认证失败:', error)
+    alert(error.data?.message || '操作失败，请重试')
+  } finally {
+    authLoading.value = false
+  }
+}
+
 const checkAuth = async () => {
   try {
     const response = await $fetch('/api/auth/me')
@@ -266,10 +374,7 @@ const handleLogout = async () => {
   try {
     await $fetch('/api/auth/logout', { method: 'POST' })
     user.value = null
-    showToast({
-      message: '已登出',
-      type: 'success'
-    })
+    alert('已登出')
   } catch (error) {
     console.error('登出失败:', error)
   }

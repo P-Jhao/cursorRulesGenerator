@@ -60,7 +60,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['close', 'success'])
+const emit = defineEmits(['close', 'success', 'update:show'])
 
 const isLogin = ref(props.defaultMode === 'login')
 const loading = ref(false)
@@ -102,20 +102,14 @@ const handleSubmit = async () => {
             emit('success', response.data.user)
 
             // 关闭弹窗
-            close()
+            emit('update:show', false)
 
             // 显示成功消息
-            showToast({
-                message: response.message,
-                type: 'success'
-            })
+            alert(response.message)
         }
     } catch (error) {
         console.error('认证失败:', error)
-        showToast({
-            message: error.data?.message || '操作失败，请重试',
-            type: 'fail'
-        })
+        alert(error.data?.message || '操作失败，请重试')
     } finally {
         loading.value = false
     }
@@ -123,6 +117,7 @@ const handleSubmit = async () => {
 
 const close = () => {
     emit('close')
+    emit('update:show', false)
     // 清空表单
     form.username = ''
     form.email = ''

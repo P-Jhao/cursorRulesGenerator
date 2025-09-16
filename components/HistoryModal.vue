@@ -139,10 +139,7 @@ const loadHistory = async () => {
         }
     } catch (error) {
         console.error('加载历史记录失败:', error)
-        showToast({
-            message: '加载历史记录失败',
-            type: 'fail'
-        })
+        alert('加载历史记录失败')
     } finally {
         loading.value = false
     }
@@ -156,19 +153,13 @@ const deleteRecord = async (recordId) => {
         })
 
         if (response.success) {
-            showToast({
-                message: '删除成功',
-                type: 'success'
-            })
+            alert('删除成功')
             // 重新加载历史记录
             await loadHistory()
         }
     } catch (error) {
         console.error('删除失败:', error)
-        showToast({
-            message: '删除失败',
-            type: 'fail'
-        })
+        alert('删除失败')
     }
 }
 
@@ -180,16 +171,10 @@ const viewFullRules = (record) => {
 const copyRules = async (rules) => {
     try {
         await navigator.clipboard.writeText(rules)
-        showToast({
-            message: '已复制到剪贴板',
-            type: 'success'
-        })
+        alert('已复制到剪贴板')
     } catch (err) {
         console.error('复制失败:', err)
-        showToast({
-            message: '复制失败，请手动复制',
-            type: 'fail'
-        })
+        alert('复制失败，请手动复制')
     }
 }
 

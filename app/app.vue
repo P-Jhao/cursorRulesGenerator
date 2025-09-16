@@ -83,10 +83,10 @@
         <h2 class="text-xl font-semibold text-gray-900 mb-4">生成的 Cursor Rules</h2>
 
         <!-- 加载状态 -->
-        <div v-if="isGenerating" class="flex items-center justify-center h-64">
+        <div v-if="isGenerating" class="flex items-center justify-center h-64" style="flex-direction: column;">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span class="ml-3 text-gray-600">正在生成 Cursor Rules...</span>
-          <span class="ml-3 text-gray-600">这个过程可能要30-60s请耐心等待</span>
+          <div class="ml-3 text-gray-600">正在生成 Cursor Rules...</div>
+          <div class="ml-3 text-gray-600">这个过程可能要30-60s请耐心等待</div>
         </div>
 
         <!-- 输出内容 -->

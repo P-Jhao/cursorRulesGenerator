@@ -2,10 +2,23 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { Database, User } from '../../../utils/database'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+// 获取JWT密钥，生产环境必须设置
+const getJWTSecret = () => {
+  const secret = process.env.JWT_SECRET || process.env.NUXT_JWT_SECRET
+  if (!secret || secret === 'your-secret-key') {
+    console.error('警告: JWT_SECRET未设置或使用默认值，这在生产环境中不安全')
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('生产环境必须设置JWT_SECRET环境变量')
+    }
+  }
+  return secret || 'your-secret-key'
+}
 
 export default defineEventHandler(async (event) => {
   try {
+    // 检查JWT密钥
+    const JWT_SECRET = getJWTSecret()
+    
     const body = await readBody(event)
     const { username, email, password } = body
 
@@ -35,22 +48,45 @@ export default defineEventHandler(async (event) => {
     }
 
     // 检查用户是否已存在
-    if (Database.findUserByEmail(email)) {
-      throw createError({
-        statusCode: 409,
-        statusMessage: '该邮箱已被注册'
-      })
-    }
+    let existingUser
+    try {
+      existingUser = Database.findUserByEmail(email)
+      if (existingUser) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: '该邮箱已被注册'
+        })
+      }
 
-    if (Database.findUserByUsername(username)) {
+      existingUser = Database.findUserByUsername(username)
+      if (existingUser) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: '该用户名已被使用'
+        })
+      }
+    } catch (dbError: any) {
+      if (dbError.statusCode) {
+        throw dbError
+      }
+      console.error('数据库查询失败:', dbError)
       throw createError({
-        statusCode: 409,
-        statusMessage: '该用户名已被使用'
+        statusCode: 500,
+        statusMessage: '数据库连接失败，请稍后重试'
       })
     }
 
     // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10)
+    let hashedPassword
+    try {
+      hashedPassword = await bcrypt.hash(password, 10)
+    } catch (bcryptError) {
+      console.error('密码加密失败:', bcryptError)
+      throw createError({
+        statusCode: 500,
+        statusMessage: '密码加密失败，请稍后重试'
+      })
+    }
 
     // 创建用户
     const user: User = {
@@ -61,14 +97,38 @@ export default defineEventHandler(async (event) => {
       createdAt: new Date().toISOString()
     }
 
-    Database.addUser(user)
+    // 保存用户
+    try {
+      Database.addUser(user)
+    } catch (saveError: any) {
+      console.error('保存用户失败:', saveError)
+      if (saveError.message.includes('权限')) {
+        throw createError({
+          statusCode: 500,
+          statusMessage: '数据存储权限错误，请联系管理员'
+        })
+      }
+      throw createError({
+        statusCode: 500,
+        statusMessage: '用户保存失败，请稍后重试'
+      })
+    }
 
     // 生成 JWT token
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    let token
+    try {
+      token = jwt.sign(
+        { userId: user.id, username: user.username },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      )
+    } catch (jwtError) {
+      console.error('JWT生成失败:', jwtError)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Token生成失败，请稍后重试'
+      })
+    }
 
     return {
       success: true,
@@ -84,12 +144,32 @@ export default defineEventHandler(async (event) => {
       }
     }
   } catch (error: any) {
+    console.error('注册API错误:', error)
+    
+    // 如果是已知的错误，直接抛出
     if (error.statusCode) {
       throw error
     }
+    
+    // 处理不同类型的错误
+    if (error.message.includes('JWT_SECRET')) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: '服务器配置错误，请联系管理员'
+      })
+    }
+    
+    if (error.message.includes('权限')) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: '数据存储权限错误，请联系管理员'
+      })
+    }
+    
+    // 其他未知错误
     throw createError({
       statusCode: 500,
-      statusMessage: '注册失败: ' + error.message
+      statusMessage: '注册失败，请稍后重试'
     })
   }
 })

@@ -97,6 +97,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import generateRulesPost from "../server/api/generate-rules.post.ts"
 
 const generatedRules = ref('')
 const isGenerating = ref(false)
@@ -193,23 +194,30 @@ const generateRules = async () => {
     title: tab.title,
     selectedTags: tab.tags.filter(tag => tag.selected).map(tag => tag.name)
   })).filter(tab => tab.selectedTags.length > 0)
-
-  try {
-    const response = await $fetch('/api/generate-rules', {
-      method: 'POST',
-      body: config
-    })
-    if (response.success) {
-      generatedRules.value = response.data
-    } else {
-      generatedRules.value = `生成失败: ${response.error}`
-    }
-  } catch (error) {
-    console.error('生成失败:', error)
-    generatedRules.value = '生成失败，请重试。'
-  } finally {
-    isGenerating.value = false
+  const response = await generateRulesPost(config)
+  console.log("response", response)
+  if (response.success) {
+    generatedRules.value = response.data
+  } else {
+    generatedRules.value = `生成失败: ${response.error}`
   }
+  // try {
+  //   const response = await $fetch('/api/generate-rules', {
+  //     method: 'POST',
+  //     body: config
+  //   })
+  //   if (response.success) {
+  //     generatedRules.value = response.data
+  //   } else {
+  //     generatedRules.value = `生成失败: ${response.error}`
+  //   }
+  // } catch (error) {
+  //   console.error('生成失败:', error)
+  //   generatedRules.value = '生成失败，请重试。'
+  // } finally {
+  //   isGenerating.value = false
+  // }
+  isGenerating.value = false
 }
 
 const copyToClipboard = async () => {

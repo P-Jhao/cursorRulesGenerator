@@ -1,0 +1,56 @@
+### 测试用户注册
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "123456"
+}
+
+### 测试用户登录
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "123456"
+}
+
+### 测试获取用户信息
+GET http://localhost:3000/api/auth/me
+Cookie: auth-token=your-token-here
+
+### 测试生成规则
+POST http://localhost:3000/api/generate-rules
+Content-Type: application/json
+
+[
+  {
+    "title": "角色",
+    "selectedTags": ["Web工程师", "前端工程师"]
+  },
+  {
+    "title": "目标",
+    "selectedTags": ["易理解", "性能优异"]
+  }
+]
+
+### 测试保存历史记录
+POST http://localhost:3000/api/history/save
+Content-Type: application/json
+Cookie: auth-token=your-token-here
+
+{
+  "config": [
+    {
+      "title": "角色",
+      "selectedTags": ["Web工程师"]
+    }
+  ],
+  "rules": "这是一个测试规则内容"
+}
+
+### 测试获取历史记录
+GET http://localhost:3000/api/history/list
+Cookie: auth-token=your-token-here

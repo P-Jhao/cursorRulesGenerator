@@ -60,6 +60,14 @@
             </div>
           </div>
 
+          <!-- 额外补充输入框 -->
+          <div class="border border-gray-200 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">额外补充</label>
+            <textarea v-model="supplementText" placeholder="额外对生成的规则进行补充..."
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              rows="3"></textarea>
+          </div>
+
           <!-- 生成按钮 -->
           <div class="pt-4">
             <button @click="generateRules" :disabled="isGenerating"
@@ -167,6 +175,7 @@ import HistoryModal from "../components/HistoryModal.vue"
 const generatedRules = ref('')
 const isGenerating = ref(false)
 const newTabTitle = ref('')
+const supplementText = ref('')
 const user = ref(null)
 const showAuthModal = ref(false)
 const showHistoryModal = ref(false)
@@ -270,7 +279,13 @@ const generateRules = async () => {
     selectedTags: tab.tags.filter(tag => tag.selected).map(tag => tag.name)
   })).filter(tab => tab.selectedTags.length > 0)
 
-  const response = await generateRulesPost(config)
+  // 准备请求数据，包含补充内容
+  const requestData = {
+    config,
+    supplement: supplementText.value.trim()
+  }
+
+  const response = await generateRulesPost(requestData)
   console.log("response", response)
 
   if (response.success) {

@@ -2,7 +2,7 @@ import { createDeepSeek } from '@ai-sdk/deepseek'
 import { generateText } from 'ai'
 import { deepseekText } from '../../tools/getDeepseekOutput'
 
-export default async (config: any) => {
+export default async (requestData: any) => {
   try {
     // 获取API密钥
     const apiKey = process.env.DEEPSEEK_API_KEY || 'sk-85d652474ddf40f0b4dd8df44568f9d0'
@@ -11,6 +11,9 @@ export default async (config: any) => {
     const deepseek = createDeepSeek({
       apiKey: apiKey
     })
+    
+    // 解构请求数据
+    const { config, supplement } = requestData
     
     // 构建提示词
     let prompt = `你可以参考这个成功的Cursor Rules内容：${deepseekText.content}\n
@@ -39,6 +42,11 @@ export default async (config: any) => {
           prompt += '\n'
         }
       })
+    }
+    
+    // 如果有补充内容，添加到prompt中
+    if (supplement && supplement.trim()) {
+      prompt += `\n额外补充要求：\n${supplement.trim()}\n`
     }
     
     prompt += `\n请生成一个完整的、专业的 Cursor Rules 文件，包含所有必要的规则和指导原则，你可以进行适当你认为合理的修改。\n`

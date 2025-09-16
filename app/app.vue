@@ -86,6 +86,7 @@
         <div v-if="isGenerating" class="flex items-center justify-center h-64">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           <span class="ml-3 text-gray-600">正在生成 Cursor Rules...</span>
+          <span class="ml-3 text-gray-600">这个过程可能要30-60s请耐心等待</span>
         </div>
 
         <!-- 输出内容 -->

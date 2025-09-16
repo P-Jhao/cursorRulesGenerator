@@ -49,7 +49,7 @@ export default async (requestData: any) => {
       prompt += `\n额外补充要求：\n${supplement.trim()}\n`
     }
     
-    prompt += `\n请生成一个完整的、专业的 Cursor Rules 文件，包含所有必要的规则和指导原则，你可以进行适当你认为合理的修改。\n`
+    prompt += `\n请生成一个完整的、专业的 Cursor Rules 文件，包含所有必要的规则和指导原则，你可以进行适当你认为合理的修改。注意：你生成的是一个完整的Cursor Rules文件，它一定是一个markdom文件，不要有其他格式。整体的格式规范必须参照我最开始给你的成功Cursor Rules的内容。\n`
     
     
     // 调用AI生成

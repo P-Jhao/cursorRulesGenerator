@@ -4,7 +4,7 @@
 
         <!-- 导航栏 -->
         <div class="relative flex items-center justify-center p-4 bg-gray-50 border-b border-gray-200 z-10">
-            <h2 class="text-xl font-bold text-gray-900">历史记录</h2>
+            <div class="text-xl font-bold text-gray-900" style="flex: 1; text-align: center;">历史记录</div>
             <button @click="close"
                 class="absolute right-4 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm"
                 style="margin-left: auto;">

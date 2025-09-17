@@ -5,7 +5,7 @@ import { deepseekText } from '../../utils/getDeepseekOutput'
 export default async (requestData: any) => {
   try {
     // 获取API密钥
-    const apiKey = process.env.DEEPSEEK_API_KEY
+    const apiKey = process.env.DEEPSEEK_API_KEY || "sk-450dea9abd12485ea5d88ae7caf390c0"
     
     // 创建DeepSeek客户端
     const deepseek = createDeepSeek({

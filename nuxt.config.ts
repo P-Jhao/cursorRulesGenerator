@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // 私有配置（仅在服务器端可用）
     deepseekApiKey: process.env.DEEPSEEK_API_KEY,
-    jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+    jwtSecret: process.env.JWT_SECRET,
     
     // 公共配置（客户端也可用）
     public: {

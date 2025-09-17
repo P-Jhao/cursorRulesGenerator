@@ -133,6 +133,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import UserProfile from '../../components/UserProfile.vue'
 
 // 页面元数据
 definePageMeta({

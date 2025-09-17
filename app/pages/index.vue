@@ -171,7 +171,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import generateRulesPost from "../server/api/generate-rules.post.ts"
-import UserProfile from "../components/UserProfile.vue"
+import UserProfile from '../../components/UserProfile.vue'
+
 
 const generatedRules = ref('')
 const isGenerating = ref(false)
@@ -372,6 +373,7 @@ const checkAuth = async () => {
     try {
         const response = await $fetch('/api/auth/me')
         if (response.success) {
+            isLogin.value = true
             user.value = response.data
         }
     } catch (error) {

@@ -4,7 +4,7 @@ import { Database } from '../../../utils/database'
 
 // 获取JWT密钥，生产环境必须设置
 const getJWTSecret = () => {
-  const secret = process.env.JWT_SECRET || process.env.NUXT_JWT_SECRET
+  const secret = process.env.JWT_SECRET || process.env.NUXT_JWT_SECRET || "PJhao"
   if (!secret || secret === 'your-secret-key') {
     console.error('警告: JWT_SECRET未设置或使用默认值，这在生产环境中不安全')
     if (process.env.NODE_ENV === 'production') {

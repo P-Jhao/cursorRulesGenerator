@@ -1,9 +1,38 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, accessSync, constants } from 'fs'
 import { join } from 'path'
 
+// 环境检测
+const isProduction = process.env.NODE_ENV === 'production'
+const isServerless = process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL || process.env.NETLIFY
+
+// 存储配置
 const DATA_DIR = join(process.cwd(), 'data')
 const USERS_FILE = join(DATA_DIR, 'users.json')
 const HISTORY_FILE = join(DATA_DIR, 'history.json')
+
+// 内存存储（用于生产环境）
+let memoryUsers: User[] = []
+let memoryHistory: HistoryRecord[] = []
+
+// 检查是否可以使用文件系统
+const canUseFileSystem = () => {
+  try {
+    // 尝试创建临时目录来测试文件系统权限
+    const testDir = join(process.cwd(), '.test-write')
+    mkdirSync(testDir, { recursive: true })
+    // 如果成功创建，删除测试目录
+    try {
+      const fs = require('fs')
+      fs.rmSync(testDir, { recursive: true, force: true })
+    } catch (e) {
+      // 忽略删除错误
+    }
+    return true
+  } catch (error) {
+    console.log('文件系统不可写，将使用内存存储:', error.message)
+    return false
+  }
+}
 
 // 检查并创建数据目录
 const ensureDataDirectory = () => {
@@ -43,14 +72,29 @@ const ensureDataFiles = () => {
 
 // 初始化数据库
 const initDatabase = () => {
-  const dirOk = ensureDataDirectory()
-  if (!dirOk) {
-    throw new Error('无法创建或访问数据目录，请检查文件系统权限')
+  // 在生产环境或serverless环境中，优先使用内存存储
+  if (isProduction || isServerless) {
+    console.log('生产环境/Serverless环境，使用内存存储')
+    return
   }
   
-  const filesOk = ensureDataFiles()
-  if (!filesOk) {
-    throw new Error('无法创建数据文件，请检查文件系统权限')
+  // 开发环境尝试使用文件系统
+  if (canUseFileSystem()) {
+    const dirOk = ensureDataDirectory()
+    if (!dirOk) {
+      console.warn('无法创建数据目录，切换到内存存储')
+      return
+    }
+    
+    const filesOk = ensureDataFiles()
+    if (!filesOk) {
+      console.warn('无法创建数据文件，切换到内存存储')
+      return
+    }
+    
+    console.log('使用文件系统存储')
+  } else {
+    console.log('文件系统不可用，使用内存存储')
   }
 }
 
@@ -58,7 +102,7 @@ const initDatabase = () => {
 try {
   initDatabase()
 } catch (error) {
-  console.error('数据库初始化失败:', error)
+  console.error('数据库初始化失败，使用内存存储:', error)
 }
 
 export interface User {
@@ -77,9 +121,18 @@ export interface HistoryRecord {
   createdAt: string
 }
 
+// 存储模式检测
+const useMemoryStorage = () => {
+  return isProduction || isServerless || !canUseFileSystem()
+}
+
 export class Database {
   // 用户相关操作
   static getUsers(): User[] {
+    if (useMemoryStorage()) {
+      return memoryUsers
+    }
+    
     try {
       if (!existsSync(USERS_FILE)) {
         console.warn('用户数据文件不存在，返回空数组')
@@ -88,16 +141,17 @@ export class Database {
       const data = readFileSync(USERS_FILE, 'utf-8')
       return JSON.parse(data)
     } catch (error) {
-      console.error('读取用户数据失败:', error)
-      // 如果是权限错误，抛出更具体的错误
-      if (error.code === 'EACCES' || error.code === 'EPERM') {
-        throw new Error('没有读取用户数据的权限，请检查文件系统权限')
-      }
-      return []
+      console.error('读取用户数据失败，切换到内存存储:', error)
+      return memoryUsers
     }
   }
 
   static saveUsers(users: User[]): void {
+    if (useMemoryStorage()) {
+      memoryUsers = users
+      return
+    }
+    
     try {
       // 确保目录存在
       if (!existsSync(DATA_DIR)) {
@@ -105,12 +159,8 @@ export class Database {
       }
       writeFileSync(USERS_FILE, JSON.stringify(users, null, 2))
     } catch (error) {
-      console.error('保存用户数据失败:', error)
-      // 如果是权限错误，抛出更具体的错误
-      if (error.code === 'EACCES' || error.code === 'EPERM') {
-        throw new Error('没有保存用户数据的权限，请检查文件系统权限')
-      }
-      throw error
+      console.error('保存用户数据失败，切换到内存存储:', error)
+      memoryUsers = users
     }
   }
 
@@ -137,20 +187,38 @@ export class Database {
 
   // 历史记录相关操作
   static getHistory(): HistoryRecord[] {
+    if (useMemoryStorage()) {
+      return memoryHistory
+    }
+    
     try {
+      if (!existsSync(HISTORY_FILE)) {
+        console.warn('历史记录文件不存在，返回空数组')
+        return []
+      }
       const data = readFileSync(HISTORY_FILE, 'utf-8')
       return JSON.parse(data)
     } catch (error) {
-      console.error('读取历史记录失败:', error)
-      return []
+      console.error('读取历史记录失败，切换到内存存储:', error)
+      return memoryHistory
     }
   }
 
   static saveHistory(history: HistoryRecord[]): void {
+    if (useMemoryStorage()) {
+      memoryHistory = history
+      return
+    }
+    
     try {
+      // 确保目录存在
+      if (!existsSync(DATA_DIR)) {
+        mkdirSync(DATA_DIR, { recursive: true })
+      }
       writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2))
     } catch (error) {
-      console.error('保存历史记录失败:', error)
+      console.error('保存历史记录失败，切换到内存存储:', error)
+      memoryHistory = history
     }
   }
 

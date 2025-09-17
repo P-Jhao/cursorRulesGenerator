@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!token) {
       throw createError({
         statusCode: 401,
-        statusMessage: '请先登录'
+        message: '请先登录'
       })
     }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: '用户不存在'
+        message: '用户不存在'
       })
     }
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     if (!config || !rules) {
       throw createError({
         statusCode: 400,
-        statusMessage: '配置和规则内容都是必填项'
+        message: '配置和规则内容都是必填项'
       })
     }
 
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
     }
     throw createError({
       statusCode: 500,
-      statusMessage: '保存历史记录失败: ' + error.message
+      message: '保存历史记录失败: ' + error.message
     })
   }
 })

@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     throw createError({
       statusCode: 500,
-      statusMessage: '登出失败: ' + error.message
+      message: '登出失败: ' + error.message
     })
   }
 })

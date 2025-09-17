@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     if (!email || !password) {
       throw createError({
         statusCode: 400,
-        statusMessage: '邮箱和密码都是必填项'
+        message: '邮箱和密码都是必填项'
       })
     }
 
@@ -38,14 +38,14 @@ export default defineEventHandler(async (event) => {
       console.error('数据库查询失败:', dbError)
       throw createError({
         statusCode: 500,
-        statusMessage: '数据库连接失败，请稍后重试'
+        message: '数据库连接失败，请稍后重试'
       })
     }
     
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: '邮箱或密码错误'
+        message: '邮箱或密码错误'
       })
     }
 
@@ -57,14 +57,14 @@ export default defineEventHandler(async (event) => {
       console.error('密码验证失败:', bcryptError)
       throw createError({
         statusCode: 500,
-        statusMessage: '密码验证失败，请稍后重试'
+        message: '密码验证失败，请稍后重试'
       })
     }
     
     if (!isValidPassword) {
       throw createError({
         statusCode: 401,
-        statusMessage: '邮箱或密码错误'
+        message: '邮箱或密码错误'
       })
     }
 
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
       console.error('JWT生成失败:', jwtError)
       throw createError({
         statusCode: 500,
-        statusMessage: 'Token生成失败，请稍后重试'
+        message: 'Token生成失败，请稍后重试'
       })
     }
 
@@ -109,21 +109,21 @@ export default defineEventHandler(async (event) => {
     if (error.message.includes('JWT_SECRET')) {
       throw createError({
         statusCode: 500,
-        statusMessage: '服务器配置错误，请联系管理员'
+        message: '服务器配置错误，请联系管理员'
       })
     }
     
     if (error.message.includes('权限')) {
       throw createError({
         statusCode: 500,
-        statusMessage: '数据存储权限错误，请联系管理员'
+        message: '数据存储权限错误，请联系管理员'
       })
     }
     
     // 其他未知错误
     throw createError({
       statusCode: 500,
-      statusMessage: '登录失败，请稍后重试'
+      message: '登录失败，请稍后重试'
     })
   }
 })

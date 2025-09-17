@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!token) {
       throw createError({
         statusCode: 401,
-        statusMessage: '请先登录'
+        message: '请先登录'
       })
     }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: '用户不存在'
+        message: '用户不存在'
       })
     }
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     if (!recordId) {
       throw createError({
         statusCode: 400,
-        statusMessage: '记录ID是必填项'
+        message: '记录ID是必填项'
       })
     }
 
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     if (!success) {
       throw createError({
         statusCode: 404,
-        statusMessage: '记录不存在或无权限删除'
+        message: '记录不存在或无权限删除'
       })
     }
 
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
     }
     throw createError({
       statusCode: 500,
-      statusMessage: '删除历史记录失败: ' + error.message
+      message: '删除历史记录失败: ' + error.message
     })
   }
 })

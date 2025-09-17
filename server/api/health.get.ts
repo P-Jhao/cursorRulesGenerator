@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     
     throw createError({
       statusCode: 500,
-      statusMessage: 'Service unhealthy',
+      message: 'Service unhealthy',
       data: {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),

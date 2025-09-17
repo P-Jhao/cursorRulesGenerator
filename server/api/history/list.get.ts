@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!token) {
       throw createError({
         statusCode: 401,
-        statusMessage: '请先登录'
+        message: '请先登录'
       })
     }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!user) {
       throw createError({
         statusCode: 401,
-        statusMessage: '用户不存在'
+        message: '用户不存在'
       })
     }
 
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     }
     throw createError({
       statusCode: 500,
-      statusMessage: '获取历史记录失败: ' + error.message
+      message: '获取历史记录失败: ' + error.message
     })
   }
 })
